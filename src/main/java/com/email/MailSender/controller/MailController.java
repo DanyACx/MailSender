@@ -169,7 +169,7 @@ public class MailController {
 			context.setVariable("message", emailFileJasperDTO.getMessage());
 
 			emailService.sendEmailWithHtmlTemplateAndFile2("plantilla3", context, emailFileJasperDTO.getFechaInicio(),
-					emailFileJasperDTO.getFechaFin());
+					emailFileJasperDTO.getFechaFin(), emailFileJasperDTO.getAnio());
 
 			Map<String, String> response = new HashMap<>();
 			response.put("estado", "Enviado");
@@ -178,6 +178,24 @@ public class MailController {
 		} catch (Exception e) {
 			throw new RuntimeException("Error al enviar el email con archivo " + e.getMessage());
 		}
+
+	}
+	
+	@PostMapping("/sendMessageHTML2") // convertor json que viene a DTO
+	public ResponseEntity<?> sendHtmlEmail2(@RequestBody EmailDTO emailDTO) {
+
+		System.out.println("Mensaje Recibido " + emailDTO);
+		Context context = new Context();
+		context.setVariable("message", emailDTO.getMessage());
+
+		//emailService.sendEmailWithHtmlTemplate(emailDTO.getToUser(), emailDTO.getSubject(), "plantilla3", context);
+		// sendEmailWithHtmlTemplate2
+		emailService.sendEmailWithHtmlTemplate2("plantilla3", context);
+		
+		Map<String, String> response = new HashMap<>();
+		response.put("estado", "Enviado");
+
+		return ResponseEntity.ok(response);
 
 	}
 

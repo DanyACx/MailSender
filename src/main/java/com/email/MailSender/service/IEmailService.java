@@ -30,9 +30,11 @@ public interface IEmailService {
 			String fechaInicio, String fechaFin, String tipo) throws JRException, IOException, SQLException;
 
 	public void sendEmailWithHtmlTemplateAndFile2(String templateName, Context context, String fechaInicio,
-			String fechaFin) throws JRException, IOException, SQLException;
+			String fechaFin, Integer anio) throws JRException, IOException, SQLException;
 
 	// public List<Object[]> sendEmailProgramado();
 
 	List<ProgramacionEnvioP> getEnvioMensual();
+	
+	public void sendEmailWithHtmlTemplate2(String templateName, Context context);
 }

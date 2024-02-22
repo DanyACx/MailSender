@@ -54,6 +54,8 @@ public class EmailServiceImpl implements IEmailService {
 
 	@Autowired
 	private ProgramacionEnvioRepository programacionEnvioRepository;
+	
+	static int i = 0;
 
 	@Override
 	public void sendEmail(String[] toUser, String subject, String message) {
@@ -182,12 +184,13 @@ public class EmailServiceImpl implements IEmailService {
 	}
 
 	public void sendEmailWithHtmlTemplateAndFile2(String templateName, Context context, String fechaInicio,
-			String fechaFin) throws JRException, IOException, SQLException {
+			String fechaFin, Integer anio) throws JRException, IOException, SQLException {
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
 		List<ProgramacionEnvioP> resultados = programacionEnvioRepository.obtenerInformacionEnvioMensual();
 		Map<String, Object> map = new HashMap<>();
-		String fileName = "reconocimientoDeuda";
+		String fileName = "reconocimientoDeuda2";
 		String htmlContent = templateEngine.process(templateName, context);
+		
 
 		resultados.forEach(resultado -> {
 
@@ -206,6 +209,7 @@ public class EmailServiceImpl implements IEmailService {
 				dto.setFileName(fileName + extension);
 				map.put("FECHAINICIO", fechaInicio);
 				map.put("FECHAFIN", fechaFin);
+				map.put("ANIO", anio);
 				map.put("tipo", resultado.getTipoFormato().toUpperCase());
 				ByteArrayOutputStream stream;
 
@@ -216,7 +220,7 @@ public class EmailServiceImpl implements IEmailService {
 
 				dto.setStream(new ByteArrayInputStream(bs));
 				dto.setLength(bs.length);
-
+				
 				ByteArrayResource byteArrayResource = new ByteArrayResource(bs, dto.getFileName());
 
 				helper.addAttachment(dto.getFileName(), byteArrayResource);
@@ -224,14 +228,69 @@ public class EmailServiceImpl implements IEmailService {
 				ClassPathResource imageResource = new ClassPathResource("static/images/banner-quipu_3.png");
 
 				helper.addInline("logoImage", imageResource);
-
+				i = i+1;
 				mailSender.send(mimeMessage);
 				System.out.println("Se envio para: " + resultado.getEmail());
+				System.out.println("paso : " + (i));
 			} catch (Exception e) {
 
 			}
 		});
 
+	}
+	
+	public void sendEmailWithHtmlTemplate2(String templateName, Context context) {
+		MimeMessage mimeMessage = mailSender.createMimeMessage();
+		
+		List<ProgramacionEnvioP> resultados = programacionEnvioRepository.obtenerInformacionEnvioMensual();
+		//Map<String, Object> map = new HashMap<>();
+		//String fileName = "reconocimientoDeuda2";
+		String htmlContent = templateEngine.process(templateName, context);
+		
+		resultados.forEach(resultado -> {
+
+			try {
+
+				MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+				helper.setTo(resultado.getEmail());
+
+				helper.setSubject("Reporte: " + resultado.getApellidoPaterno() + " " + resultado.getApellidoMaterno() + " " + resultado.getNombrePersona());
+
+				helper.setText(htmlContent, true);
+
+				//ReporteDTO dto = new ReporteDTO();
+				//String extension = ".".concat(resultado.getTipoFormato().toLowerCase());
+				//dto.setFileName(fileName + extension);
+				//map.put("FECHAINICIO", fechaInicio);
+				//map.put("FECHAFIN", fechaFin);
+				//map.put("ANIO", anio);
+				//map.put("tipo", resultado.getTipoFormato().toUpperCase());
+				//ByteArrayOutputStream stream;
+
+				/*stream = reportManager.export(fileName, resultado.getTipoFormato().toUpperCase(), map,
+						dataSource.getConnection());*/
+
+				//byte[] bs = stream.toByteArray();
+
+				//dto.setStream(new ByteArrayInputStream(bs));
+				//dto.setLength(bs.length);
+				
+				//ByteArrayResource byteArrayResource = new ByteArrayResource(bs, dto.getFileName());
+
+				//helper.addAttachment(dto.getFileName(), byteArrayResource);
+
+				ClassPathResource imageResource = new ClassPathResource("static/images/banner-quipu_3.png");
+
+				helper.addInline("logoImage", imageResource);
+				i = i+1;
+				mailSender.send(mimeMessage);
+				System.out.println("Se envio para: " + resultado.getEmail());
+				System.out.println("paso : " + (i));
+			} catch (Exception e) {
+
+			}
+		});
 	}
 
 }

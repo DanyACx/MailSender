@@ -25,6 +25,7 @@ public class EmailFileJasperDTO2 {
 	private String fechaInicio;
 	private String fechaFin;
 	private String tipo;
+	private Integer anio;
 	
 	private MultipartFile file;
 }
