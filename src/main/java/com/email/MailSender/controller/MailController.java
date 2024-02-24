@@ -24,6 +24,7 @@ import com.email.MailSender.dto.EmailFileDTO;
 import com.email.MailSender.dto.EmailFileJasperDTO2;
 import com.email.MailSender.projections.ProgramacionEnvioP;
 import com.email.MailSender.service.IEmailService;
+import com.email.MailSender.service.impl.EmailServiceImpl;
 
 @RestController
 @RequestMapping("/v1")
@@ -196,6 +197,28 @@ public class MailController {
 		response.put("estado", "Enviado");
 
 		return ResponseEntity.ok(response);
+
+	}
+	
+	@PostMapping("/sendMessageHTMLWithFile4") // convertor json que viene a DTO
+	public ResponseEntity<?> sendHtmlEmailWithFile4(@ModelAttribute EmailFileJasperDTO2 emailFileJasperDTO) {
+
+		try {
+
+			System.out.println("Mensaje Recibido " + emailFileJasperDTO);
+			Context context = new Context();
+			context.setVariable("message", emailFileJasperDTO.getMessage());
+
+			emailService.sendEmailWithHtmlTemplateAndFile3("plantilla3", context, emailFileJasperDTO.getFechaInicio(),
+					emailFileJasperDTO.getFechaFin(), emailFileJasperDTO.getAnio());
+
+			Map<String, String> response = new HashMap<>();
+			response.put("estado", "Enviado");
+
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			throw new RuntimeException("Error al enviar el email con archivo " + e.getMessage());
+		}
 
 	}
 

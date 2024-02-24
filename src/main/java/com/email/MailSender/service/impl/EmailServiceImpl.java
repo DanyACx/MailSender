@@ -19,6 +19,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -29,6 +30,7 @@ import com.email.MailSender.dto.ReporteDTO;
 import com.email.MailSender.enums.TipoReporteEnum;
 import com.email.MailSender.projections.ProgramacionEnvioP;
 import com.email.MailSender.service.IEmailService;
+import com.email.MailSender.service.IReportService;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -54,6 +56,9 @@ public class EmailServiceImpl implements IEmailService {
 
 	@Autowired
 	private ProgramacionEnvioRepository programacionEnvioRepository;
+	
+	@Autowired
+	private IReportService reportService;
 	
 	static int i = 0;
 
@@ -183,6 +188,8 @@ public class EmailServiceImpl implements IEmailService {
 		return resultados;
 	}
 
+	@Override
+	@Async
 	public void sendEmailWithHtmlTemplateAndFile2(String templateName, Context context, String fechaInicio,
 			String fechaFin, Integer anio) throws JRException, IOException, SQLException {
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -239,6 +246,16 @@ public class EmailServiceImpl implements IEmailService {
 
 	}
 	
+	@Override
+    public void sendEmailWithHtmlTemplateAndFile3(String templateName, Context context, String fechaInicio, String fechaFin, Integer anio) throws JRException, IOException, SQLException {
+        List<ProgramacionEnvioP> resultados = programacionEnvioRepository.obtenerInformacionEnvioMensual();
+        resultados.forEach(resultado -> {
+        	reportService.generateReportAndSendEmail(resultado, templateName, context, fechaInicio, fechaFin, anio);
+        });
+    }
+	
+	@Override
+	@Async
 	public void sendEmailWithHtmlTemplate2(String templateName, Context context) {
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
 		
@@ -292,5 +309,38 @@ public class EmailServiceImpl implements IEmailService {
 			}
 		});
 	}
+	
+	/*@Override
+	@Async
+    public void generateReportAndSendEmail(ProgramacionEnvioP resultado, String templateName, Context context, String fechaInicio, String fechaFin, Integer anio) {
+        try {
+            // Generar el informe de manera asíncrona
+            Map<String, Object> map = new HashMap<>();
+            String fileName = "reconocimientoDeuda2";
+            ByteArrayOutputStream stream = reportManager.export(fileName, resultado.getTipoFormato().toUpperCase(), map, dataSource.getConnection());
+            
+            // Preparar el correo electrónico y enviarlo
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(resultado.getEmail());
+            helper.setSubject("Reporte: " + resultado.getApellidoPaterno() + " " + resultado.getApellidoMaterno() + " " + resultado.getNombrePersona());
+            String htmlContent = templateEngine.process(templateName, context);
+            helper.setText(htmlContent, true);
+            ReporteDTO dto = new ReporteDTO();
+            String extension = ".".concat(resultado.getTipoFormato().toLowerCase());
+            dto.setFileName(fileName + extension);
+            byte[] bs = stream.toByteArray();
+            dto.setStream(new ByteArrayInputStream(bs));
+            dto.setLength(bs.length);
+            ByteArrayResource byteArrayResource = new ByteArrayResource(bs, dto.getFileName());
+            helper.addAttachment(dto.getFileName(), byteArrayResource);
+            ClassPathResource imageResource = new ClassPathResource("static/images/banner-quipu_3.png");
+            helper.addInline("logoImage", imageResource);
+            mailSender.send(mimeMessage);
+            System.out.println("Se envió correo a: " + resultado.getEmail());
+        } catch (Exception e) {
+            System.out.println("Error al enviar correo a: " + resultado.getEmail() + ". " + e.getMessage());
+        }
+    }*/
 
 }

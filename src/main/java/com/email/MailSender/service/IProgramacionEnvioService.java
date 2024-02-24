@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.email.MailSender.projections.ProgramacionEnvioP;
 
-public interface ProgramacionEnvioService {
+public interface IProgramacionEnvioService {
 
     List<ProgramacionEnvioP> getEnvioMensual();
 }

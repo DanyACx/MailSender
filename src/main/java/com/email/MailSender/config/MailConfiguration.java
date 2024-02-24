@@ -33,7 +33,7 @@ public class MailConfiguration {
 		props.put("mail.transport.protocol", "smtp"); // especifica el protcolo
 		props.put("mail.smtp.auth", "true"); // habilitando la autenticacion
 	    props.put("mail.smtp.starttls.enable", "true"); // habilita el cifrado de la comunicación
-		props.put("mail.debug", "true"); //para imprimir información en el consola
+		//props.put("mail.debug", "true"); //para imprimir información en el consola
 		props.put("mail.smtp.ssl.trust", "*");
 		
 		return mailSender;

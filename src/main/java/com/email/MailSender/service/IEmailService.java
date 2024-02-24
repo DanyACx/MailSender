@@ -31,10 +31,14 @@ public interface IEmailService {
 
 	public void sendEmailWithHtmlTemplateAndFile2(String templateName, Context context, String fechaInicio,
 			String fechaFin, Integer anio) throws JRException, IOException, SQLException;
+	
+	public void sendEmailWithHtmlTemplateAndFile3(String templateName, Context context, String fechaInicio,
+			String fechaFin, Integer anio) throws JRException, IOException, SQLException;
 
 	// public List<Object[]> sendEmailProgramado();
 
 	List<ProgramacionEnvioP> getEnvioMensual();
 	
 	public void sendEmailWithHtmlTemplate2(String templateName, Context context);
+	
 }
