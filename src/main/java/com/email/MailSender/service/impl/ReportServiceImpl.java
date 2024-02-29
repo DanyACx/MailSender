@@ -46,6 +46,12 @@ public class ReportServiceImpl implements IReportService {
             // Generar el informe de manera asíncrona
             Map<String, Object> map = new HashMap<>();
             String fileName = "reconocimientoDeuda2";
+            
+            map.put("FECHAINICIO", fechaInicio);
+			map.put("FECHAFIN", fechaFin);
+			map.put("ANIO", anio);
+			map.put("tipo", resultado.getTipoFormato().toUpperCase());
+            
             ByteArrayOutputStream stream = reportManager.export(fileName, resultado.getTipoFormato().toUpperCase(), map, dataSource.getConnection());
             
             // Preparar el correo electrónico y enviarlo
