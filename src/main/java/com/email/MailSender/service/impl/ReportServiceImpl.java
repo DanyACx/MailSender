@@ -2,6 +2,7 @@ package com.email.MailSender.service.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,41 +41,42 @@ public class ReportServiceImpl implements IReportService {
 	private TemplateEngine templateEngine;
 
 	@Override
-    @Async
-    public void generateReportAndSendEmail(ProgramacionEnvioP resultado, String templateName, Context context, String fechaInicio, String fechaFin, Integer anio) {
-        try {
-            // Generar el informe de manera asíncrona
-            Map<String, Object> map = new HashMap<>();
-            String fileName = "reconocimientoDeuda2";
-            
-            map.put("FECHAINICIO", fechaInicio);
-			map.put("FECHAFIN", fechaFin);
-			map.put("ANIO", anio);
-			map.put("tipo", resultado.getTipoFormato().toUpperCase());
-            
-            ByteArrayOutputStream stream = reportManager.export(fileName, resultado.getTipoFormato().toUpperCase(), map, dataSource.getConnection());
-            
-            // Preparar el correo electrónico y enviarlo
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setTo(resultado.getEmail());
-            helper.setSubject("Reporte: " + resultado.getApellidoPaterno() + " " + resultado.getApellidoMaterno() + " " + resultado.getNombrePersona());
-            String htmlContent = templateEngine.process(templateName, context);
-            helper.setText(htmlContent, true);
-            ReporteDTO dto = new ReporteDTO();
-            String extension = ".".concat(resultado.getTipoFormato().toLowerCase());
-            dto.setFileName(fileName + extension);
-            byte[] bs = stream.toByteArray();
-            dto.setStream(new ByteArrayInputStream(bs));
-            dto.setLength(bs.length);
-            ByteArrayResource byteArrayResource = new ByteArrayResource(bs, dto.getFileName());
-            helper.addAttachment(dto.getFileName(), byteArrayResource);
-            ClassPathResource imageResource = new ClassPathResource("static/images/banner-quipu_3.png");
-            helper.addInline("logoImage", imageResource);
-            mailSender.send(mimeMessage);
-            System.out.println("Se envió correo a: " + resultado.getEmail());
-        } catch (Exception e) {
-            System.out.println("Error al enviar correo a: " + resultado.getEmail() + ". " + e.getMessage());
-        }
-    }
+	@Async
+	public void generateReportAndSendEmail(ProgramacionEnvioP resultado, String templateName, Context context, String fechaInicio, String fechaFin, Integer anio) {
+	    try (Connection connection = dataSource.getConnection()) { // Establecer conexión dentro de un bloque try-with-resources
+	        // Generar el informe de manera asíncrona
+	        Map<String, Object> map = new HashMap<>();
+	        String fileName = "reconocimientoDeuda2";
+	        
+	        map.put("FECHAINICIO", fechaInicio);
+	        map.put("FECHAFIN", fechaFin);
+	        map.put("ANIO", anio);
+	        map.put("tipo", resultado.getTipoFormato().toUpperCase());
+	        
+	        ByteArrayOutputStream stream = reportManager.export(fileName, resultado.getTipoFormato().toUpperCase(), map, connection);
+	        
+	        // Preparar el correo electrónico y enviarlo
+	        MimeMessage mimeMessage = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+	        helper.setTo(resultado.getEmail());
+	        helper.setSubject("Reporte: " + resultado.getApellidoPaterno() + " " + resultado.getApellidoMaterno() + " " + resultado.getNombrePersona());
+	        String htmlContent = templateEngine.process(templateName, context);
+	        helper.setText(htmlContent, true);
+	        ReporteDTO dto = new ReporteDTO();
+	        String extension = ".".concat(resultado.getTipoFormato().toLowerCase());
+	        dto.setFileName(fileName + extension);
+	        byte[] bs = stream.toByteArray();
+	        dto.setStream(new ByteArrayInputStream(bs));
+	        dto.setLength(bs.length);
+	        ByteArrayResource byteArrayResource = new ByteArrayResource(bs, dto.getFileName());
+	        helper.addAttachment(dto.getFileName(), byteArrayResource);
+	        ClassPathResource imageResource = new ClassPathResource("static/images/banner-quipu_3.png");
+	        helper.addInline("logoImage", imageResource);
+	        mailSender.send(mimeMessage);
+	        System.out.println("Se envió correo a: " + resultado.getEmail());
+	    } catch (Exception e) {
+	        System.out.println("Error al enviar correo a: " + resultado.getEmail() + ". " + e.getMessage());
+	    }
+	}
+
 }

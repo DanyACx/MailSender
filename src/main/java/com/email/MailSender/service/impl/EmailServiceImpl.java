@@ -251,6 +251,8 @@ public class EmailServiceImpl implements IEmailService {
         List<ProgramacionEnvioP> resultados = programacionEnvioRepository.obtenerInformacionEnvioMensual();
         resultados.forEach(resultado -> {
         	reportService.generateReportAndSendEmail(resultado, templateName, context, fechaInicio, fechaFin, anio);
+        	i = i+1;
+        	System.out.println("paso : " + (i));
         });
     }
 	
